@@ -1,10 +1,16 @@
 import argparse
 from os.path import abspath, dirname, exists
-
+import sys
 import numpy as np
 import torch
-from network_contraction import collect_results, contraction_single_task, write_result
-from search_order import read_samples, search_order
+from tensorq import collect_results, contraction_single_task, write_result, read_samples, search_order
+
+contraction_filename = sys.path[0] + "/scheme_n30_m14.pt"
+samples_filename = sys.path[0] + "/amplitudes_n30_m14_s0_e0_pEFGH_10000.txt"
+n_sub_task = 1
+task_num = 1
+max_bitstrings = 1_000
+use_cutensor = False  # 使用cutenor可以获得更高性能
 
 # 生成缩并顺序，这一步需要用artensor库。可以使用已经生成的缩并顺序跳过这一步
 need_search_order = True
@@ -16,15 +22,9 @@ if need_search_order:
         device="cuda",
         sc_target=30,
         seed=0,
-        bitstrings_txt="amplitudes_n30_m14_s0_e0_pEFGH_10000.txt",
+        bitstrings_txt=samples_filename,
         max_bitstrings=1_000,
     )
-
-contraction_filename = abspath(dirname(__file__)) + "/scheme_n30_m14.pt"
-n_sub_task = 1
-task_num = 1
-max_bitstrings = 1_000
-use_cutensor = False  # 使用cutenor可以获得更高性能
 
 if not exists(contraction_filename):
     assert ValueError("No contraction data!")
@@ -68,7 +68,7 @@ contraction_single_task(
 file_exist_flag = True
 for i in range(task_num):
     if not exists(
-        abspath(dirname(__file__)) + f"/results/partial_contraction_results_{i}.pt"
+        sys.path[0] + f"/results/partial_contraction_results_{i}.pt"
     ):
         file_exist_flag = False
 if file_exist_flag:
@@ -80,7 +80,7 @@ if file_exist_flag:
     bitstrings_sorted = bitstrings
     amplitude_sparsestate = results
     correct_num = 0
-    data = read_samples("amplitudes_n30_m14_s0_e0_pEFGH_10000.txt")
+    data = read_samples(samples_filename)
     amplitude_google = np.array([data[i][1] for i in range(max_bitstrings)])
     bitstrings = [data[i][0] for i in range(max_bitstrings)]
     for i in range(len(bitstrings_sorted)):

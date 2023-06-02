@@ -7,10 +7,10 @@ from copy import deepcopy
 import numpy as np
 import torch
 from os.path import exists, dirname, abspath
+import sys
 
 def read_samples(filename):
     import os
-    filename = abspath(dirname(__file__)) + '/' + filename
     if os.path.exists(filename):
         samples_data = []
         with open(filename, 'r') as f:
@@ -32,7 +32,7 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 30, 
     bitstrings_txt = 'amplitudes_n30_m14_s0_e0_pEFGH_10000.txt',
     max_bitstrings = 1_000):
     torch.backends.cuda.matmul.allow_tf32 = False
-    if exists(abspath(dirname(__file__)) + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
+    if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
         return
 
     qc = QuantumCircuit(n, m, seq=seq)
@@ -91,6 +91,6 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 30, 
         slicing_indices[(x, y)] = (idxi_j, idxj_i)
 
     result = (tensors_save, scheme_sparsestate, slicing_indices, bitstrings_sorted)
-    torch.save(result, abspath(dirname(__file__)) + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
+    torch.save(result, sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
     print("时间复杂度tc, 空间复杂度sc, 内存复杂度mc = ",ctree_new.tree_complexity())
 

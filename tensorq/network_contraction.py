@@ -2,7 +2,8 @@ import torch
 import numpy as np
 from copy import deepcopy
 from os.path import exists, dirname, abspath
-from os import makedirs
+from os import makedirs, curdir
+import sys
 import multiprocessing as mp
 from math import ceil
 import time
@@ -95,7 +96,7 @@ def contraction_single_task(
         task_id:int, device='cuda:0', n_sub_task = 1, use_cutensor = False
     ):
     # n_sub_task: number of subtask of each task
-    store_path = abspath(dirname(__file__)) + '/results/'
+    store_path = sys.path[0] + '/results/'
     if not exists(store_path):
         try:
             makedirs(store_path)
@@ -130,7 +131,7 @@ def contraction_single_task(
 
 def collect_results(task_num):
     for task_id in range(task_num):
-        file_path = abspath(dirname(__file__)) + f'/results/partial_contraction_results_{task_id}.pt'
+        file_path = sys.path[0] + f'/results/partial_contraction_results_{task_id}.pt'
         if task_id == 0:
             collect_result = torch.load(file_path)
         else:
@@ -141,9 +142,9 @@ def collect_results(task_num):
 
 def write_result(bitstrings, results):
     n_qubit = 30
-    amplitude_filename = abspath(dirname(__file__)) + f'/results/result_amplitudes.txt'
-    xeb_filename = abspath(dirname(__file__)) + f'/results/result_xeb.txt'
-    time_filename = abspath(dirname(__file__)) + f'/results/result_time.txt'
+    amplitude_filename = sys.path[0] + f'/results/result_amplitudes.txt'
+    xeb_filename = sys.path[0] + f'/results/result_xeb.txt'
+    time_filename = sys.path[0] + f'/results/result_time.txt'
     with open(amplitude_filename, 'w') as f:
         for bitstring, amplitude in zip(bitstrings, results):
             f.write(f'{bitstring} {np.real(amplitude)} {np.imag(amplitude)}j\n')
