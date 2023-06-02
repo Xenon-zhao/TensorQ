@@ -1,6 +1,6 @@
-from load_circuits import QuantumCircuit
+from .load_circuits import QuantumCircuit
 from artensor import (
-    find_order, 
+    find_order,
     contraction_scheme_sparse,
 )
 from copy import deepcopy

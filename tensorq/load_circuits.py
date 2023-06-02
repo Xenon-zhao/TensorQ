@@ -70,7 +70,7 @@ def simplify_edges(tensors, neighbors, edges):
             else:
                 neighbors[i].append(node)
                 neighbors[node][idxn_j] = i
-    
+
         tensors[j] = []
         neighbors[j] = []
 
@@ -99,7 +99,7 @@ class QuantumCircuit:
             self.gates.append([final_states[i], [i]])
 
         self.final_qubit_id = [i for i in range(self.n)]
-        
+
         tensors, self.neighbors, self.qubits_representation = self.gates_to_tensors(self.gates, twoqubit_simplify, fix_pairs)
         assert package in [np, torch]
         if complex128:
@@ -155,7 +155,7 @@ class QuantumCircuit:
             final_qubits_fix_id = [i for i in range(len(gates)-2*qubit_num, len(gates))]
 
             simplify_order = []
-        
+
             labels_copy = deepcopy(labels)
             remove_nodes = []
             simplify_flag = False
@@ -253,7 +253,7 @@ class QuantumCircuit:
         else:
             tensors_simp, labels_simp = tensors, labels
         return tensors_simp, labels_simp, qubits_representation
-    
+
     def einsum_eq(self, group=None):
         import opt_einsum as oe
         if group is None:

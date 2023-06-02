@@ -12,14 +12,14 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
     contraction the tensor network according to contraction scheme
 
     :param tensors: numerical tensors of the tensor network
-    :param contraction_scheme: 
+    :param contraction_scheme:
         list of contraction step, defintion of entries in each step:
         step[0]: locations of tensors to be contracted
         step[1]: einsum equation of this tensor contraction
         step[2]: batch dimension of the contraction
-        step[3]: optional, if the second tensor has batch dimension, 
+        step[3]: optional, if the second tensor has batch dimension,
             then here is the reshape sequence
-        step[4]: optional, if the second tensor has batch dimension, 
+        step[4]: optional, if the second tensor has batch dimension,
             then here is the correct reshape sequence for validation
 
     :return tensors[i]: the final resulting amplitudes
@@ -40,33 +40,33 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
                 if k != 0:
                     if step[3]:
                         tensors[i].insert(
-                            1, 
+                            1,
                             einsum_func(
                                 step[1],
-                                tensors[i][0][batch_i[k]], 
-                                tensors[j][batch_j[k]], 
+                                tensors[i][0][batch_i[k]],
+                                tensors[j][batch_j[k]],
                             ).reshape(step[3])
                         )
                     else:
                         tensors[i].insert(
-                            1, 
+                            1,
                             einsum_func(
                                 step[1],
-                                tensors[i][0][batch_i[k]], 
+                                tensors[i][0][batch_i[k]],
                                 tensors[j][batch_j[k]])
                         )
                 else:
                     if step[3]:
                         tensors[i][0] = einsum_func(
                             step[1],
-                            tensors[i][0][batch_i[k]], 
-                            tensors[j][batch_j[k]], 
+                            tensors[i][0][batch_i[k]],
+                            tensors[j][batch_j[k]],
                         ).reshape(step[3])
                     else:
                         tensors[i][0] = einsum_func(
                             step[1],
-                            tensors[i][0][batch_i[k]], 
-                            tensors[j][batch_j[k]], 
+                            tensors[i][0][batch_i[k]],
+                            tensors[j][batch_j[k]],
                         )
             tensors[j] = []
             tensors[i] = torch.cat(tensors[i], dim=0)
@@ -91,7 +91,7 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
 
 
 def contraction_single_task(
-        tensors:list, scheme:list, slicing_indices:dict, 
+        tensors:list, scheme:list, slicing_indices:dict,
         task_id:int, device='cuda:0', n_sub_task = 1, use_cutensor = False
     ):
     # n_sub_task: number of subtask of each task
@@ -135,7 +135,7 @@ def collect_results(task_num):
             collect_result = torch.load(file_path)
         else:
             collect_result += torch.load(file_path)
-    
+
     return collect_result
 
 
