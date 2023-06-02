@@ -5,6 +5,7 @@ Generating contraction orders and perform numerical contractions for arbitrary t
 
 # install
 cd <yourpath>/artensor-main
+
 python setup.py install
 
 # running requirements
