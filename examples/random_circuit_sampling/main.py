@@ -20,7 +20,7 @@ if need_search_order:
         m=14,
         seq="EFGH",
         device="cuda",
-        sc_target=30,
+        sc_target=24,
         seed=0,
         bitstrings_txt=samples_filename,
         max_bitstrings=1_000,

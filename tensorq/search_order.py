@@ -28,10 +28,37 @@ def read_samples(filename):
     else:
         raise ValueError("{} does not exist".format(filename))
 
-def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 30, seed = 0,
+def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, seed = 0,
     bitstrings_txt = 'amplitudes_n30_m14_s0_e0_pEFGH_10000.txt',
     max_bitstrings = 1_000):
+    """
+    Search contraction order.
+
+    Args:
+        n (int, optional): the number of qubit, Default: ``30``, 
+        m (int, optional): the deepth of gates, Default: ``14``, 
+        seq (strings, optional): the sequence of coupler activation patterns, Default: ``EFGH``, 
+        device (strings, optional): device to calculate, 
+            'cuda' for GPU, 'cpu' for CPU,
+            Default: ``cuda`` , 
+        sc_target (int, optional): target space complexity equal the memery of device (GB), 
+            Default: ``24``, 
+        seed (int, optional): random seed number, Default: ``24``,
+        bitstrings_txt (strings, optional): a file has the bitstrings to calculate amplitude,
+            Default: ``amplitudes_n30_m14_s0_e0_pEFGH_10000.txt``,
+        max_bitstrings (int, optional): max number of bitstings to calculate amplitude,
+            Default: ``1_000 (= 1000)``
+
+    Returns:
+        result (tuple): a tuple include the date to contract:
+            (tensors_save, scheme_sparsestate, slicing_indices, bitstrings_sorted)
+            tensors_save (list): numerical tensors of the tensor network,
+            scheme_sparsestate (list): list of contraction step,
+            slicing_indices (dict): {tensor id: sliced indices},
+            bitstrings_sorted (list): the bitstings to calculate amplitude
+    """
     torch.backends.cuda.matmul.allow_tf32 = False
+    sc_target = 30 + int(np.log2(sc_target/24))
     if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
         return
 
@@ -92,5 +119,6 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 30, 
 
     result = (tensors_save, scheme_sparsestate, slicing_indices, bitstrings_sorted)
     torch.save(result, sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
-    print("时间复杂度tc, 空间复杂度sc, 内存复杂度mc = ",ctree_new.tree_complexity())
+    print("time complexity (tc,log10), space complexity (sc,log2), memory complexity (mc) = ",ctree_new.tree_complexity())
+    return result
 

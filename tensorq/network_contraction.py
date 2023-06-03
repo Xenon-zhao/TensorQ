@@ -12,20 +12,25 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
     '''
     contraction the tensor network according to contraction scheme
 
-    :param tensors: numerical tensors of the tensor network
-    :param contraction_scheme:
-        list of contraction step, defintion of entries in each step:
-        step[0]: locations of tensors to be contracted
-        step[1]: einsum equation of this tensor contraction
-        step[2]: batch dimension of the contraction
-        step[3]: optional, if the second tensor has batch dimension,
-            then here is the reshape sequence
-        step[4]: optional, if the second tensor has batch dimension,
-            then here is the correct reshape sequence for validation
+    Args:
+        tensors (list): numerical tensors of the tensor network
+        contraction_scheme (list):
+            list of contraction step, defintion of entries in each step:
+            step[0]: locations of tensors to be contracted
+            step[1]: einsum equation of this tensor contraction
+            step[2]: batch dimension of the contraction
+            step[3]: optional, if the second tensor has batch dimension,
+                then here is the reshape sequence
+            step[4]: optional, if the second tensor has batch dimension,
+                then here is the correct reshape sequence for validation
+        use_cutensor (bool, optional): 
+            whether or not to use cutensor package in einsum,
+            Default: ``False``
+                
 
-    :return tensors[i]: the final resulting amplitudes
+    Returns:
+        tensors[i] (torch.Tensor): the final resulting amplitudes
     '''
-
     if use_cutensor:
         from cutensor.torch import EinsumGeneral
         einsum_func = EinsumGeneral
@@ -87,7 +92,6 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
         else:
             tensors[i] = einsum_func(step[1], tensors[i], tensors[j])
             tensors[j] = []
-
     return tensors[i]
 
 
@@ -95,6 +99,34 @@ def contraction_single_task(
         tensors:list, scheme:list, slicing_indices:dict,
         task_id:int, device='cuda:0', n_sub_task = 1, use_cutensor = False
     ):
+    """
+    Finish a single contraction task.
+
+    Args:
+        tensors (list): numerical tensors of the tensor network, 
+        scheme (list):
+            list of contraction step, defintion of entries in each step:
+            step[0]: locations of tensors to be contracted
+            step[1]: einsum equation of this tensor contraction
+            step[2]: batch dimension of the contraction
+            step[3]: optional, if the second tensor has batch dimension,
+                then here is the reshape sequence
+            step[4]: optional, if the second tensor has batch dimension,
+                then here is the correct reshape sequence for validation, 
+        slicing_indices (dict): {tensor id: sliced indices},
+        task_id (int): task id, 
+        device (string, optional): device to calculate, 
+            'cuda:0' for GPU, 'cpu' for CPU,
+            Default: ``cuda:0`` 
+        n_sub_task (int, optional): number of subtask in each task
+            Default: ``1``, 
+        use_cutensor (bool, optional): 
+            whether or not to use cutensor package in einsum,
+            Default: ``False``
+
+    Returns:
+        collect_tensor.cpu() (torch.Tensor): the final resulting amplitudes
+    """
     # n_sub_task: number of subtask of each task
     store_path = sys.path[0] + '/results/'
     if not exists(store_path):
@@ -125,6 +157,7 @@ def contraction_single_task(
         with open(time_path, 'a') as f:
             f.write(f'task id {task_id} running time: {t1-t0:.4f} seconds\n')
         print(f'subtask {task_id} done, the partial result file has been written into results/partial_contraction_results_{task_id}.pt')
+        return collect_tensor.cpu()
     else:
         print(f'subtask {task_id} has already been calculated, skip to another one.')
 
