@@ -29,7 +29,7 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
                 
 
     Returns:
-        tensors[i] (torch.Tensor): the final resulting amplitudes
+        - **tensors[i]** (torch.Tensor), the final resulting amplitudes
     '''
     if use_cutensor:
         from cutensor.torch import EinsumGeneral
@@ -125,7 +125,7 @@ def contraction_single_task(
             Default: ``False``
 
     Returns:
-        collect_tensor.cpu() (torch.Tensor): the final resulting amplitudes
+        - **collect_tensor.cpu()** (torch.Tensor), the final resulting amplitudes
     """
     # n_sub_task: number of subtask of each task
     store_path = sys.path[0] + '/results/'

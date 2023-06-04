@@ -115,6 +115,21 @@ class QuantumCircuit:
             self.tensors.append(data)
 
     def gates_to_tensors(self, gates, simplify=True, fix_pairs=[]):
+        """
+        Convert gates to tensor.
+
+        Args:
+            gates (list): the gate in quantum circuit.
+            simplify (bool, optional): whether to simplify circuit.
+                Default: ``True``.
+            fix_pairs (list, optional): fixed node pairs.
+                Default: ``[]``.
+
+        Returns:
+            - **tensors_simp** (list), the tensor of gate after simplify.
+            - **labels_simp** (list), the neighbors of each tensor.
+            - **qubits_representation** (list), qubits representation.
+        """
         tensors = []
         labels = []
         self.chains = []

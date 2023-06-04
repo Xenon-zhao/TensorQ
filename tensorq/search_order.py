@@ -50,7 +50,7 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
             Default: ``1_000 (= 1000)``
 
     Returns:
-        result (tuple): a tuple include the date to contract:
+        - **result** (tuple), a tuple include the date to contract:
             (tensors_save, scheme_sparsestate, slicing_indices, bitstrings_sorted)
             tensors_save (list): numerical tensors of the tensor network,
             scheme_sparsestate (list): list of contraction step,
@@ -88,10 +88,10 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
         betas=np.linspace(3.0, 21.0, 61), alpha = 10 #峰值性能/带宽
     )
 
-    tensors = []
-    for x in range(len(qc.tensors)):
-        if x not in final_qubits:
-            tensors.append(qc.tensors[x].to(device))
+    # tensors = []
+    # for x in range(len(qc.tensors)):
+    #     if x not in final_qubits:
+    #         tensors.append(qc.tensors[x].to(device))
 
     scheme_sparsestate, _, bitstrings_sorted = contraction_scheme_sparse(
         ctree_new, bitstrings, sc_target=sc_target)
