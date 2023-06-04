@@ -15,3 +15,4 @@ artensor==0.1.0
 
 你也可以下载最新的artensor，[Fanerst/artensor: Generating contraction orders and perform numerical contractions for arbitrary tensor networks (github.com)](https://github.com/Fanerst/artensor)
 
+ cirq==0.7.0
