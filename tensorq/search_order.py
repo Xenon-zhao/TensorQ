@@ -76,6 +76,7 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
     final_qubits = set(range(len(neighbors) - n, len(neighbors)))
     bond_dims = {i:2.0 for i in range(len(edges))}
 
+    bitstrings_txt = sys.path[0] + "/" + bitstrings_txt
     if exists(bitstrings_txt):
         data = read_samples(bitstrings_txt)
         bitstrings = [data[i][0][0:n] for i in range(max_bitstrings)]
