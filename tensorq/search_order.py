@@ -30,7 +30,7 @@ def read_samples(filename):
 
 def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, seed = 0,
     bitstrings_txt = 'amplitudes_n30_m14_s0_e0_pEFGH_10000.txt',
-    max_bitstrings = 1_000):
+    max_bitstrings = 1_000, save_scheme = False, qc = None):
     """
     Search contraction order.
 
@@ -48,6 +48,10 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
             Default: ``amplitudes_n30_m14_s0_e0_pEFGH_10000.txt``,
         max_bitstrings (int, optional): max number of bitstings to calculate amplitude,
             Default: ``1_000 (= 1000)``
+        save_scheme (bool, optional): whether or not save scheme,
+            Default: ``False``
+        qc (QuantumCircuit, optional):  the quantum circuit,
+            Default: ``None``
 
     Returns:
         - **result** (tuple), a tuple include the date to contract:
@@ -61,8 +65,8 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
     sc_target = 30 + int(np.log2(sc_target/24))
     if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
         return
-
-    qc = QuantumCircuit(n, m, seq=seq)
+    if qc == None:
+        qc = QuantumCircuit(n, m, seq=seq)
     edges = []
     for i in range(len(qc.neighbors)):
         for j in qc.neighbors[i]:
@@ -72,10 +76,15 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
     final_qubits = set(range(len(neighbors) - n, len(neighbors)))
     bond_dims = {i:2.0 for i in range(len(edges))}
 
-    data = read_samples(bitstrings_txt)
-    bitstrings = [data[i][0][0:n] for i in range(max_bitstrings)]
-    if len(data[0])>1:
-        amplitude_google = np.array([data[i][1] for i in range(max_bitstrings)])
+    if exists(bitstrings_txt):
+        data = read_samples(bitstrings_txt)
+        bitstrings = [data[i][0][0:n] for i in range(max_bitstrings)]
+        if len(data[0])>1:
+            amplitude_google = np.array([data[i][1] for i in range(max_bitstrings)])
+    else:
+        bitstrings = []
+        for i in range(2**n):
+            bitstrings.append(np.binary_repr(i,n))
     tensor_bonds = {
         i:[edges.index((min(i, j), max(i, j))) for j in neighbors[i]] 
         for i in range(len(neighbors))
@@ -118,7 +127,8 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
         slicing_indices[(x, y)] = (idxi_j, idxj_i)
 
     result = (tensors_save, scheme_sparsestate, slicing_indices, bitstrings_sorted)
-    torch.save(result, sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
+    if save_scheme:
+        torch.save(result, sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
     print("time complexity (tc,log10), space complexity (sc,log2), memory complexity (mc) = ",ctree_new.tree_complexity())
     return result
 

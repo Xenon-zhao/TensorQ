@@ -79,12 +79,14 @@ def simplify_edges(tensors, neighbors, edges):
 
 class QuantumCircuit:
     def __init__(self, n=53, m=20, seed=0, elide=0, seq='ABCDCDAB', bitstring=None, fix_pairs=[],
-                 twoqubit_simplify=True, fSim_simplify=None, package=torch, complex128=False):
+                 twoqubit_simplify=True, fSim_simplify=None, package=torch, complex128=False, fname=None):
         self.n = n
         seq = 'ABCDCDAB' if 'a' in seq or 'A' in seq else 'EFGH'
-        fname = f"circuit_n{n}_m{m}_s{seed}_e{elide}_p{seq}"
+        if fname == None:
+            fname = f"circuit_n{n}_m{m}_s{seed}_e{elide}_p{seq}"
         self.gates, _ = self.get_circuit(fname)
 
+        # add initial states and final states
         initial_states = np.vstack([np.array([1, 0], dtype=np.complex128)] * n)
         final_states = np.empty([n, 2], dtype=np.complex128)
         if bitstring is None:

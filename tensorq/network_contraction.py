@@ -97,7 +97,7 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
 
 def contraction_single_task(
         tensors:list, scheme:list, slicing_indices:dict,
-        task_id:int, device='cuda:0', n_sub_task = 1, use_cutensor = False
+        task_id = 0, device = 'cuda:0', n_sub_task = 1, use_cutensor = False, file_save = False
     ):
     """
     Finish a single contraction task.
@@ -114,7 +114,7 @@ def contraction_single_task(
             step[4]: optional, if the second tensor has batch dimension,
                 then here is the correct reshape sequence for validation, 
         slicing_indices (dict): {tensor id: sliced indices},
-        task_id (int): task id, 
+        task_id (int, optional): task id, Default: ``0``
         device (string, optional): device to calculate, 
             'cuda:0' for GPU, 'cpu' for CPU,
             Default: ``cuda:0`` 
@@ -123,17 +123,20 @@ def contraction_single_task(
         use_cutensor (bool, optional): 
             whether or not to use cutensor package in einsum,
             Default: ``False``
+        file_save (bool, optional): whether or not to save result,
+            Default: ``False``
 
     Returns:
         - **collect_tensor.cpu()** (torch.Tensor), the final resulting amplitudes
     """
     # n_sub_task: number of subtask of each task
     store_path = sys.path[0] + '/results/'
-    if not exists(store_path):
-        try:
-            makedirs(store_path)
-        except:
-            pass
+    if file_save:
+        if not exists(store_path):
+            try:
+                makedirs(store_path)
+            except:
+                pass
     file_path = store_path + f'partial_contraction_results_{task_id}.pt'
     time_path = store_path + f'result_time.txt'
     if not exists(file_path):
@@ -153,10 +156,11 @@ def contraction_single_task(
             else:
                 collect_tensor += tensor_contraction_sparse(sliced_tensors, scheme, use_cutensor=use_cutensor)
         t1 = time.perf_counter()
-        torch.save(collect_tensor.cpu(), file_path)
-        with open(time_path, 'a') as f:
-            f.write(f'task id {task_id} running time: {t1-t0:.4f} seconds\n')
-        print(f'subtask {task_id} done, the partial result file has been written into results/partial_contraction_results_{task_id}.pt')
+        if file_save:
+            torch.save(collect_tensor.cpu(), file_path)
+            with open(time_path, 'a') as f:
+                f.write(f'task id {task_id} running time: {t1-t0:.4f} seconds\n')
+            print(f'subtask {task_id} done, the partial result file has been written into results/partial_contraction_results_{task_id}.pt')
         return collect_tensor.cpu()
     else:
         print(f'subtask {task_id} has already been calculated, skip to another one.')
