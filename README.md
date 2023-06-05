@@ -21,4 +21,4 @@ artensor==0.1.0
  
  artensor和tensorq采用张量网络解决指数墙问题的原理，以及张量网络的切片方法可以参考这篇文献：
  
- F. Pan, K. Chen, and P. Zhang, Solving the sampling problem of the sycamore quantum circuits, [Phys. Rev. Lett. 129, 090502 (2022).](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.129.090502]
+ F. Pan, K. Chen, and P. Zhang, Solving the sampling problem of the sycamore quantum circuits, [Phys. Rev. Lett. 129, 090502 (2022).](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.129.090502)
