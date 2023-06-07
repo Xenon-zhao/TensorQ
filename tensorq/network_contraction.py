@@ -100,7 +100,7 @@ def contraction_single_task(
         task_id = 0, device = 'cuda:0', n_sub_task = 1, use_cutensor = False, file_save = False
     ):
     """
-    Finish a single contraction task.
+    Slice the tensor network, and finish a contraction task.
 
     Args:
         tensors (list): numerical tensors of the tensor network, 

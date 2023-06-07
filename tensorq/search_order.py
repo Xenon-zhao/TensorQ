@@ -28,16 +28,15 @@ def read_samples(filename):
     else:
         raise ValueError("{} does not exist".format(filename))
 
-def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, seed = 0,
-    bitstrings_txt = 'amplitudes_n30_m14_s0_e0_pEFGH_10000.txt',
-    max_bitstrings = 1_000, save_scheme = False, qc = None):
+def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
+    bitstrings_txt = None,
+    max_bitstrings = 1, save_scheme = False, qc = None):
     """
     Search contraction order.
 
     Args:
         n (int, optional): the number of qubit, Default: ``30``, 
         m (int, optional): the deepth of gates, Default: ``14``, 
-        seq (strings, optional): the sequence of coupler activation patterns, Default: ``EFGH``, 
         device (strings, optional): device to calculate, 
             'cuda' for GPU, 'cpu' for CPU,
             Default: ``cuda`` , 
@@ -45,9 +44,9 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
             Default: ``24``, 
         seed (int, optional): random seed number, Default: ``24``,
         bitstrings_txt (strings, optional): a file has the bitstrings to calculate amplitude,
-            Default: ``amplitudes_n30_m14_s0_e0_pEFGH_10000.txt``,
+            Default: ``None``,
         max_bitstrings (int, optional): max number of bitstings to calculate amplitude,
-            Default: ``1_000 (= 1000)``
+            Default: ``1``
         save_scheme (bool, optional): whether or not save scheme,
             Default: ``False``
         qc (QuantumCircuit, optional):  the quantum circuit,
@@ -66,7 +65,7 @@ def search_order(n = 30, m = 14, seq = 'EFGH', device = 'cuda', sc_target = 24, 
     if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
         return
     if qc == None:
-        qc = QuantumCircuit(n, m, seq=seq)
+        qc = QuantumCircuit(n=n) # m, seq=seq
     edges = []
     for i in range(len(qc.neighbors)):
         for j in qc.neighbors[i]:
