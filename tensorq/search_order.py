@@ -30,7 +30,9 @@ def read_samples(filename):
 
 def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
     bitstrings_txt = None,
-    max_bitstrings = 1, save_scheme = False, qc = None):
+    max_bitstrings = 1, save_scheme = False, qc = None, fname = None, 
+    trials=5, iters=10, slicing_repeat=1,
+    betas=np.linspace(3.0, 21.0, 61), alpha = 128): # iters一般设成50，slicing_repeat一般设成4，trials是用的线程数，betas是运行的逆温度
     """
     Search contraction order.
 
@@ -51,6 +53,17 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
             Default: ``False``
         qc (QuantumCircuit, optional):  the quantum circuit,
             Default: ``None``
+        trials (int, optional): the number of search thread, suggestive value '36',
+            Default: ``5``
+        iters (int, optional): the number of interation, suggestive value '50',
+            Default: ``10``
+        slicing_repeat (int, optional): the number of slicing repeat, suggestive value '4',
+            Default: ``1``
+        betas (numpy.ndarray, optional): the inverse temperature,
+            Default: ``numpy.linspace(3.0, 21.0, 61)``
+        alpha (int, optioanl): the ratio of floating point computing speed(TFLOPS) to memory access bandwidth(TB/s),
+            '128' for Nvidia A100 SXM(TF32),  '20' for Nvidia V100S PCle(FP32)
+            Default: ``128``
 
     Returns:
         - **result** (tuple), a tuple include the date to contract:
@@ -65,7 +78,7 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
     if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
         return
     if qc == None:
-        qc = QuantumCircuit(n=n) # m, seq=seq
+        qc = QuantumCircuit(n=n, fname=fname) # m, seq=seq
     edges = []
     for i in range(len(qc.neighbors)):
         for j in qc.neighbors[i]:
@@ -93,10 +106,10 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
 
     order_slicing, slicing_bonds, ctree_new = find_order(
         tensor_bonds, bond_dims, final_qubits, seed, max_bitstrings, 
-        sc_target=sc_target, trials=5, iters=10, slicing_repeat=1, # iters一般设成50，slicing_repeat一般设成4，trials是用的线程数，betas是运行的逆温度
-        betas=np.linspace(3.0, 21.0, 61), alpha = 10 #峰值性能/带宽
+        sc_target=sc_target, trials=trials, iters=iters, slicing_repeat=slicing_repeat, # iters一般设成50，slicing_repeat一般设成4，trials是用的线程数，betas是运行的逆温度
+        betas=betas, alpha = alpha               # 峰值性能/带宽 
     )
-
+    print('Finish find contraction tree, next construct the scheme.')
     # tensors = []
     # for x in range(len(qc.tensors)):
     #     if x not in final_qubits:
@@ -104,7 +117,7 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
 
     scheme_sparsestate, _, bitstrings_sorted = contraction_scheme_sparse(
         ctree_new, bitstrings, sc_target=sc_target)
-
+    print('Finish construct the scheme.')
     slicing_edges = [edges[i] for i in slicing_bonds]
     slicing_indices = {}.fromkeys(slicing_edges)
     tensors = []

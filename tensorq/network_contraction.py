@@ -77,9 +77,13 @@ def tensor_contraction_sparse(tensors, contraction_scheme, use_cutensor=False):
             tensors[j] = []
             tensors[i] = torch.cat(tensors[i], dim=0)
         elif len(step) > 3 and len(batch_i) == len(batch_j) == 1:
-            tensors[i] = tensors[i][batch_i[0]]
-            tensors[j] = tensors[j][batch_j[0]]
-            tensors[i] = einsum_func(step[1], tensors[i], tensors[j])
+            try:
+                tensors[i] = tensors[i][batch_i[0]]
+                tensors[j] = tensors[j][batch_j[0]]
+                tensors[i] = einsum_func(step[1], tensors[i], tensors[j])
+            except:
+                print(step)
+                print(tensors[i],batch_i[0])
         elif len(step) > 3:
             tensors[i] = einsum_func(
                 step[1],
@@ -138,7 +142,7 @@ def contraction_single_task(
             except:
                 pass
     file_path = store_path + f'partial_contraction_results_{task_id}.pt'
-    time_path = store_path + f'result_time.txt'
+    time_path = store_path + 'result_time.txt'
     if not exists(file_path):
         t0 = time.perf_counter()
         slicing_edges = list(slicing_indices.keys())
@@ -179,9 +183,9 @@ def collect_results(task_num):
 
 def write_result(bitstrings, results):
     n_qubit = 30
-    amplitude_filename = sys.path[0] + f'/results/result_amplitudes.txt'
-    xeb_filename = sys.path[0] + f'/results/result_xeb.txt'
-    time_filename = sys.path[0] + f'/results/result_time.txt'
+    amplitude_filename = sys.path[0] + '/results/result_amplitudes.txt'
+    xeb_filename = sys.path[0] + '/results/result_xeb.txt'
+    time_filename = sys.path[0] + '/results/result_time.txt'
     with open(amplitude_filename, 'w') as f:
         for bitstring, amplitude in zip(bitstrings, results):
             f.write(f'{bitstring} {np.real(amplitude)} {np.imag(amplitude)}j\n')
