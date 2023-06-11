@@ -78,7 +78,7 @@ def simplify_edges(tensors, neighbors, edges):
 
 class QuantumCircuit:
     def __init__(self, n=53, bitstring=None, fname=None, fix_pairs=[],
-                 twoqubit_simplify=True, package=torch, complex128=False):
+                 twoqubit_simplify=True, package=torch, complex128=False, circuit_package = 'Cirq'):
         """
         Initialize the QuantumCircuit
             Args:
@@ -102,7 +102,7 @@ class QuantumCircuit:
             raise Exception('Please input circuit filename, like QuantumCircuit(fname = \'circuit\')')
         if not exists(sys.path[0] + "/" + fname + '.py'):
             raise Exception('Don\'t find this file: ' + sys.path[0] + "/" + fname + '.py')
-        self.gates, _ = self.get_circuit(fname)
+        self.gates = self.get_circuit(fname, circuit_package=circuit_package)
 
         # add initial states and final states
         initial_states = np.vstack([np.array([1, 0], dtype=np.complex128)] * n)
@@ -321,38 +321,50 @@ class QuantumCircuit:
 
         return eq, sizes, out_inds
 
-    def get_circuit(self, fname):
+    def get_circuit(self, fname, circuit_package = 'Cirq'):
         """
         获取量子线路。
             Args:
                 fname (str): 量子线路文件名（去掉后缀）
+                circuit_package (str, optional): which package to generate circuit.
+                    'Cirq', 'MindQuantum'
+                    Default:``Cirq``
         
             Returns:
                 gates (list): 量子门
         """
         import importlib
-        qc = importlib.import_module(fname)
+        
+        if circuit_package == 'Cirq':
+            qc = importlib.import_module(fname)
+            id_map={}
+            n_qubits = 0
+            for qubit in qc.QUBIT_ORDER:
+                id_map[(qubit.row,qubit.col)] = n_qubits
+                n_qubits += 1
 
-        id_map={}
-        n_qubits = 0
-        for qubit in qc.QUBIT_ORDER:
-            id_map[(qubit.row,qubit.col)] = n_qubits
-            n_qubits += 1
+            gates = []
+            for moment in qc.CIRCUIT:
+                for gate in moment:
+                    qubits = gate.qubits
+                    mat = cirq.unitary(gate)
+                    if (len(qubits) == 1):
+                        qubit_id = id_map[ qubits[0].row,qubits[0].col ]
+                        gates.append( [mat,[qubit_id]] )
+                    elif (len(qubits) == 2):
+                        qubit1_id = id_map[ qubits[0].row,qubits[0].col ]
+                        qubit2_id = id_map[ qubits[1].row,qubits[1].col ]
+                        gates.append( [mat,[qubit1_id,qubit2_id]])
+                    else:
+                        print("unknown gates !!!")
+                        print(gate.__str__)
+                        sys.exit(0)
 
-        gates = []
-        for moment in qc.CIRCUIT:
-            for gate in moment:
-                qubits = gate.qubits
-                mat = cirq.unitary(gate)
-                if (len(qubits) == 1):
-                    qubit_id = id_map[ qubits[0].row,qubits[0].col ]
-                    gates.append( [mat,[qubit_id]] )
-                elif (len(qubits) == 2):
-                    qubit1_id = id_map[ qubits[0].row,qubits[0].col ]
-                    qubit2_id = id_map[ qubits[1].row,qubits[1].col ]
-                    gates.append( [mat,[qubit1_id,qubit2_id]])
-                else:
-                    print("unknown gates !!!")
-                    print(gate.__str__)
-                    sys.exit(0)
-        return gates, qc
+        if circuit_package == 'MindQuantum':
+            encoder = importlib.import_module(fname).CIRCUIT
+            gates = []
+            for i in range(len(encoder)):
+                mat = encoder[i].matrix()
+                qubit_id = encoder[i].obj_qubits
+                gates.append( [mat, qubit_id] )
+        return gates

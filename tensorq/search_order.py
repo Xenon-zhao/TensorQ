@@ -88,16 +88,19 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
     final_qubits = set(range(len(neighbors) - n, len(neighbors)))
     bond_dims = {i:2.0 for i in range(len(edges))}
 
-    bitstrings_txt = sys.path[0] + "/" + bitstrings_txt
-    if exists(bitstrings_txt):
-        data = read_samples(bitstrings_txt)
-        bitstrings = [data[i][0][0:n] for i in range(max_bitstrings)]
-        if len(data[0])>1:
-            amplitude_google = np.array([data[i][1] for i in range(max_bitstrings)])
-    else:
+    if bitstrings_txt == None:
         bitstrings = []
         for i in range(2**n):
             bitstrings.append(np.binary_repr(i,n))
+    else:
+        bitstrings_txt = sys.path[0] + "/" + bitstrings_txt
+        if exists(bitstrings_txt):
+            data = read_samples(bitstrings_txt)
+            bitstrings = [data[i][0][0:n] for i in range(max_bitstrings)]
+            if len(data[0])>1:
+                amplitude_google = np.array([data[i][1] for i in range(max_bitstrings)])
+        else:
+            raise(f'Don\'t find the file:{bitstrings_txt}')
     tensor_bonds = {
         i:[edges.index((min(i, j), max(i, j))) for j in neighbors[i]] 
         for i in range(len(neighbors))
