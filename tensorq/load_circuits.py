@@ -323,15 +323,16 @@ class QuantumCircuit:
 
     def get_circuit(self, fname, circuit_package = 'Cirq'):
         """
-        获取量子线路。
+        Get the matrix of quantum circuit.
+
             Args:
-                fname (str): 量子线路文件名（去掉后缀）
+                fname (str): Quantum circuit file name without Quantum circuit file name
                 circuit_package (str, optional): which package to generate circuit.
                     'Cirq', 'MindQuantum'
                     Default:``Cirq``
         
             Returns:
-                gates (list): 量子门
+                gates (list): matrix and qubit position of quantum gate.
         """
         import importlib
         
