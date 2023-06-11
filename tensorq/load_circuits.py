@@ -89,6 +89,9 @@ class QuantumCircuit:
                 twoqubit_simplify (bool): Whether to simplify the two bit gate. Default: ``True``
                 package (module): Select a package for algebraic computation, optionally torch and numpy. Default: ``torch``
                 complex128 (bool): Choose complex128 data type (True) or complex64 data type (False). Default: ``False``
+                circuit_package (str, optional): which package to generate circuit.
+                    'Cirq', 'MindQuantum'
+                    Default:``Cirq``
         
             Attributes:
                 n (int): Qubit number.
@@ -367,5 +370,7 @@ class QuantumCircuit:
             for i in range(len(encoder)):
                 mat = encoder[i].matrix()
                 qubit_id = encoder[i].obj_qubits
-                gates.append( [mat, qubit_id] )
+                if encoder[i].name == 'CNOT':
+                    qubit_id = list(reversed(qubit_id))
+                gates.append( [mat,qubit_id] )
         return gates
