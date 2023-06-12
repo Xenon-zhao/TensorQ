@@ -16,11 +16,16 @@ def read_samples(filename):
         with open(filename, 'r') as f:
             l = f.readlines()
         f.close()
-        if ' ' in l[0]:
+        if ' ' in l[0]: # read file like: '100010001000000011011000101000   4.13647322e-05  -3.39767357e-05'
             for line in l:
                 ll = line.split()
                 samples_data.append((ll[0], float(ll[1]) + 1j*float(ll[2])))
-        else:
+        elif '\t' in l[0]: # read file like: '00000000000110000000001100001001011001000100100011110	(9.34221e-09,-4.77717e-10)	8.750510121618899e-17'
+            for line in l:
+                ll = line.split('\t')
+                real, imag = map(float, ll[1].strip('()').split(','))
+                samples_data.append((ll[0], complex(real, imag), float(ll[2])))
+        else: # read file like: '100010001000000011011000101000'
             for line in l:
                 ll = line
                 samples_data.append([ll])
@@ -76,7 +81,7 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
     torch.backends.cuda.matmul.allow_tf32 = False
     sc_target = 30 + int(np.log2(sc_target/24))
     if exists(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt"):
-        return
+        return torch.load(sys.path[0] + "/scheme_n"+str(n)+"_m"+str(m)+".pt")
     if qc == None:
         qc = QuantumCircuit(n=n, fname=fname) # m, seq=seq
     edges = []
@@ -119,7 +124,7 @@ def search_order(n = 30, m = 14, device = 'cuda', sc_target = 24, seed = 0,
     #         tensors.append(qc.tensors[x].to(device))
 
     scheme_sparsestate, _, bitstrings_sorted = contraction_scheme_sparse(
-        ctree_new, bitstrings, sc_target=sc_target)
+        ctree_new, bitstrings, sc_target=n)
     print('Finish construct the scheme.')
     slicing_edges = [edges[i] for i in slicing_bonds]
     slicing_indices = {}.fromkeys(slicing_edges)
